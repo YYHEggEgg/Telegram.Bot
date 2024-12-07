@@ -80,6 +80,9 @@ public class TelegramBotClient : ITelegramBotClient
 #else
         _httpClient = httpClient ?? new HttpClient();
 #endif
+        if (options.RequestHeaders != null)
+            foreach (var pair in options.RequestHeaders)
+                _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(pair.Key, pair.Value);
         GlobalCancelToken = cancellationToken;
     }
 

@@ -38,15 +38,33 @@ public class TelegramBotClientOptions
     /// <summary><see cref="RetryThreshold">Automatic retry</see> will be attempted for up to RetryCount requests</summary>
     public int RetryCount { get; set; } = 3;
 
+    /// <summary>
+    /// silly modify
+    /// </summary>
+    public IReadOnlyDictionary<string, string>? RequestHeaders { get; set; }
+
     /// <summary>Create a new <see cref="TelegramBotClientOptions"/> instance.</summary>
     /// <param name="token">API token</param>
     /// <param name="baseUrl">Used to change base URL to your private Bot API server URL. It looks like http://localhost:8081. Path, query and fragment will be omitted if present.</param>
     /// <param name="useTestEnvironment">Indicates that test environment will be used</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="token"/> or <paramref name="baseUrl"/> format is invalid</exception>
     public TelegramBotClientOptions(string token, string? baseUrl = default, bool useTestEnvironment = false)
+        : this(token, baseUrl is not null, baseUrl is not null ? ExtractBaseUrl(baseUrl) : null, useTestEnvironment)
+    { }
+
+    /// <summary>
+    /// silly modify
+    /// </summary>
+    /// <param name="token"></param>
+    /// <param name="localBotServer"></param>
+    /// <param name="effectiveBaseUrl"></param>
+    /// <param name="useTestEnvironment"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    public TelegramBotClientOptions(string token, bool localBotServer, string? effectiveBaseUrl, bool useTestEnvironment = false)
     {
         Token = token ?? throw new ArgumentNullException(nameof(token));
-        BaseUrl = baseUrl;
+        BaseUrl = effectiveBaseUrl;
         UseTestEnvironment = useTestEnvironment;
 
         int index = token.IndexOf(':');
@@ -54,8 +72,8 @@ public class TelegramBotClientOptions
             throw new ArgumentException("Bot token invalid", nameof(token));
         BotId = botId;
 
-        LocalBotServer = baseUrl is not null;
-        var effectiveBaseUrl = LocalBotServer ? ExtractBaseUrl(baseUrl) : BaseTelegramUrl;
+        LocalBotServer = localBotServer;
+        effectiveBaseUrl ??= BaseTelegramUrl;
         BaseRequestUrl = useTestEnvironment ? $"{effectiveBaseUrl}/bot{token}/test" : $"{effectiveBaseUrl}/bot{token}";
         BaseFileUrl = useTestEnvironment ? $"{effectiveBaseUrl}/file/bot{token}/test" : $"{effectiveBaseUrl}/file/bot{token}";
     }
